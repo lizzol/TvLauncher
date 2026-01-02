@@ -1,10 +1,7 @@
 [Desktop Entry]
 Type=Application
-Name=TV Launcher
-Comment=A sleek, console-style application launcher for Windows and Linux
-Exec=bash -c "cd 'your py path here"
-Icon=your icon path here
+Name=TVLauncher
+Exec=/<path_to>/TvLauncher/venv/bin/python3 /<path_to>/TvLauncher/TvLauncher_linux.py
+Path=/<path_to>/TvLauncher/
 Terminal=false
-Categories=Utility;
-Path=
-StartupNotify=false
+X-GNOME-Autostart-enabled=true
