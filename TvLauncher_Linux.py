@@ -1569,8 +1569,22 @@ class TVLauncher(QMainWindow):
         
         # --- INIZIO FIX ---
         # Ripristina l'allineamento originale a sinistra
-        main_layout.addWidget(self.carousel_container, alignment=Qt.AlignmentFlag.AlignLeft)
-        # --- FINE FIX ---
+        # Calculate container width based on number of apps
+        if len(self.apps) <= 5:
+                # For few apps, size container to fit only those apps
+                num_tiles = len(self.apps) if self.apps else 1
+                container_width = (num_tiles * self.normal_width) + ((num_tiles - 1) * self.tile_spacing)
+        else:
+                # For many apps, use the 5-tile visible width
+                container_width = (5 * self.scaling.scale(400)) + (4 * self.scaling.scale(5))
+        self.carousel_container = QWidget()
+        self.carousel_container.setFixedHeight(self.scaling.scale(310))
+        self.carousel_container.setFixedWidth(container_width)
+        self.carousel_container.setStyleSheet("background-color: transparent;")
+        # Then add with center alignment:
+        main_layout.addWidget(self.carousel_container, alignment=Qt.AlignmentFlag.AlignCenter)
+        
+# --- FINE FIX ---
         
         main_layout.addSpacing(20)
         main_layout.addStretch(1)
@@ -2140,8 +2154,34 @@ class TVLauncher(QMainWindow):
             QMessageBox.critical(self, "Errore", f"Comando non trovato. Stai usando {system}?")
         except Exception as e:
             QMessageBox.critical(self, "Errore", f"Impossibile eseguire {action}:\n{str(e)}")
-   
+    
     def build_infinite_carousel(self):
+        # Calculate optimal container width based on app count
+        num_apps = len(self.apps)
+        
+        if num_apps == 0:
+            # Empty state
+            container_width = self.scaling.scale(800)
+        elif num_apps <= 5:
+            # Few apps: calculate exact width needed + extra padding
+            # Width = (number of normal tiles × normal width) + (gaps between tiles)
+            # The focused tile is WIDER, so we need to account for that
+            focused_extra = self.focused_width - self.normal_width  # Extra width for focused tile
+            
+            # Calculate base width
+            base_width = (num_apps * self.normal_width) + ((num_apps - 1) * self.tile_spacing) + focused_extra
+            
+            # Add padding to prevent clipping (adjust this value if needed)
+            padding = self.scaling.scale(100)  # Extra space on each side
+            container_width = base_width + padding
+        else:
+            # Many apps: use the standard 5-tile visible width (9 tiles total, 5 visible)
+            visible_width = (5 * self.scaling.scale(400)) + (4 * self.scaling.scale(5))
+            container_width = visible_width + self.scaling.scale(100)  # Add padding here too
+        
+        # Apply the calculated width
+        self.carousel_container.setFixedWidth(container_width)
+        
         for tile in self.tiles:
             tile.setParent(None)
             tile.deleteLater()
